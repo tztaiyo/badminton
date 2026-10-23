@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ダブルス ペア発表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+/* 縦1列のスマホアプリ型。上に題字、中央に3つの画面(メンバー / ペア / 枠)、下に固定タブ。コートの緑と、シャトルのコルク色(あなた・シード)を使う。 */
+:root {
+  --bg: #edf3ef;
+  --surface: #ffffff;
+  --surface-2: #e2ebe5;
+  --ink: #0f211b;
+  --ink-soft: #4a625a;
+  --line: #c8d6ce;
+  --accent: #0a7c5c;
+  --accent-ink: #ffffff;
+  --accent-soft: #d2ece2;
+  --cork: #8f5a05;
+  --cork-soft: #fbecc9;
+  --danger: #b3361f;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", system-ui, sans-serif;
+  --font-num: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --nav-h: calc(62px + env(safe-area-inset-bottom, 0px));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1511;
+    --surface: #12201a;
+    --surface-2: #1b2d25;
+    --ink: #e7f2ed;
+    --ink-soft: #9bb4a9;
+    --line: #27392f;
+    --accent: #41d1a1;
+    --accent-ink: #04231a;
+    --accent-soft: #143a2d;
+    --cork: #efb857;
+    --cork-soft: #3b2d0f;
+    --danger: #ff8f78;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1511;
+  --surface: #12201a;
+  --surface-2: #1b2d25;
+  --ink: #e7f2ed;
+  --ink-soft: #9bb4a9;
+  --line: #27392f;
+  --accent: #41d1a1;
+  --accent-ink: #04231a;
+  --accent-soft: #143a2d;
+  --cork: #efb857;
+  --cork-soft: #3b2d0f;
+  --danger: #ff8f78;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px calc(var(--nav-h) + 28px);
+  -webkit-text-size-adjust: 100%;
+}
+.app { max-width: 640px; margin: 0 auto; }
+ul { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, p { margin: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* header */
+.top { display: flex; align-items: center; gap: 14px; padding: 6px 0 18px; }
+.top svg { flex: none; color: var(--accent); }
+.top h1 { font-size: 22px; font-weight: 900; line-height: 1.25; text-wrap: balance; }
+.top p { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+
+/* views */
+.view { display: grid; gap: 14px; min-width: 0; }
+.sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sec-head h2 { font-size: 18px; font-weight: 900; }
+.sec-head.sub h2 { font-size: 16px; }
+.chip { font-weight: 700; font-variant-numeric: tabular-nums; background: var(--surface-2); padding: 2px 12px; border-radius: 99px; font-size: 14px; }
+.lead, .note { color: var(--ink-soft); font-size: 13.5px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+
+/* buttons */
+.btn {
+  min-height: 48px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn-ghost { border-color: var(--accent); color: var(--accent); }
+.btn-lg { width: 100%; min-height: 54px; font-size: 16px; }
+.btn-sm { min-height: 40px; padding: 0 12px; font-size: 13.5px; }
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tools.single { grid-template-columns: 1fr; }
+
+/* roster */
+.row { display: grid; gap: 6px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.row-top { display: flex; gap: 8px; align-items: center; }
+.name, #bulkText {
+  width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); color: var(--ink); font: inherit; font-size: 16px; padding: 0 12px;
+}
+#bulkText { padding: 10px 12px; line-height: 1.5; resize: vertical; }
+.icon-btn { flex: none; width: 44px; height: 44px; border: 0; background: none; color: var(--ink-soft); border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+.icon-btn:hover { color: var(--danger); }
+.row-lv { display: grid; grid-template-columns: 1fr 96px; align-items: center; gap: 10px; }
+.lv-read { display: grid; justify-items: end; line-height: 1.1; }
+.lv-num { font-family: var(--font-num); font-weight: 700; font-size: 32px; font-variant-numeric: tabular-nums; }
+.lv-label { font-size: 11.5px; color: var(--ink-soft); }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; background: transparent; margin: 0; touch-action: pan-y; }
+input[type=range]::-webkit-slider-runnable-track { height: 10px; border-radius: 99px; background: linear-gradient(to right, var(--accent) var(--p, 50%), var(--surface-2) var(--p, 50%)); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); margin-top: -10px; }
+input[type=range]::-moz-range-track { height: 10px; border-radius: 99px; background: var(--surface-2); }
+input[type=range]::-moz-range-progress { height: 10px; border-radius: 99px; background: var(--accent); }
+input[type=range]::-moz-range-thumb { box-sizing: border-box; width: 30px; height: 30px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); }
+input[type=range]:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+input:disabled { opacity: 0.55; }
+
+.banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: var(--cork-soft); padding: 12px 14px; border-radius: 10px; font-size: 14px; }
+.bulk { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; }
+.bulk summary { min-height: 48px; display: flex; align-items: center; font-weight: 700; cursor: pointer; }
+.bulk[open] { padding-bottom: 14px; display: grid; gap: 10px; }
+.bulk label { font-size: 13px; color: var(--ink-soft); }
+.cta { position: sticky; bottom: calc(var(--nav-h) + 8px); background: var(--bg); padding: 10px 0 2px; margin-top: 6px; }
+
+/* my registration + overview */
+.me-panel { padding: 14px; display: grid; gap: 10px; }
+.me-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.me-head h2 { font-size: 16px; font-weight: 900; }
+.me-status { font-size: 12.5px; color: var(--ink-soft); }
+.me-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.me-actions .btn-primary { flex: 1; min-width: 140px; }
+.ov { padding: 14px; display: grid; gap: 12px; }
+.ov-stats { display: flex; flex-wrap: wrap; gap: 2px 18px; font-size: 13.5px; color: var(--ink-soft); align-items: baseline; }
+.ov-stats b { font-family: var(--font-num); font-size: 26px; font-weight: 700; color: var(--ink); margin: 0 2px; font-variant-numeric: tabular-nums; }
+.hist { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.hist-col { display: grid; grid-template-rows: 14px 52px 16px; justify-items: center; font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.hb { width: 100%; height: 52px; display: flex; align-items: flex-end; justify-content: center; }
+.hb i { display: block; width: 70%; max-width: 26px; background: var(--accent); border-radius: 3px 3px 0 0; }
+.hb i.me { background: var(--cork); }
+.ov-list { border-top: 1px solid var(--line); }
+.ov-row { display: grid; grid-template-columns: minmax(0, 1fr) 84px 28px; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.ov-row:first-child { border-top: 0; }
+.ov-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ov-bar { height: 6px; border-radius: 99px; background: var(--surface-2); position: relative; overflow: hidden; }
+.ov-bar i { position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--accent); }
+.ov-lv { font-family: var(--font-num); font-weight: 700; font-size: 20px; text-align: right; font-variant-numeric: tabular-nums; }
+.you { font-style: normal; font-size: 11px; font-weight: 700; color: var(--cork); background: var(--cork-soft); padding: 0 8px; border-radius: 99px; margin-left: 6px; }
+
+/* pairs */
+.controls { display: grid; gap: 10px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 12px; }
+.seg label { position: relative; display: block; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: grid; place-items: center; min-height: 48px; padding: 0 4px; border-radius: 9px; font-weight: 700; font-size: 14px; color: var(--ink-soft); text-align: center; line-height: 1.3; }
+.seg input:checked + span { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 2px var(--accent); }
+.seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sum-line { font-size: 14px; }
+.verdict { display: inline-block; margin-left: 8px; font-size: 12px; font-weight: 700; padding: 1px 10px; border-radius: 99px; background: var(--accent-soft); }
+.verdict.warn { background: var(--cork-soft); }
+.status { background: var(--accent-soft); padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 700; }
+.notice { background: var(--cork-soft); padding: 8px 12px; border-radius: 8px; font-size: 13.5px; }
+.pair { display: grid; grid-template-columns: 44px minmax(0, 1fr) 64px; gap: 0 10px; align-items: center; padding: 12px 12px 10px; border-top: 1px solid var(--line); }
+.pair:first-child { border-top: 0; }
+.pair-no { text-align: center; line-height: 1; }
+.pn-label { display: block; font-size: 11px; color: var(--ink-soft); }
+.pn-num { font-family: var(--font-num); font-size: 30px; font-weight: 700; }
+.pair-players { display: grid; gap: 6px; min-width: 0; }
+.pl {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 0; min-height: 44px;
+  padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+  font: inherit; font-weight: 500; text-align: left; cursor: pointer;
+}
+.pl:disabled { cursor: default; opacity: 1; }
+.pl-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.pl-lv { flex: none; font-family: var(--font-num); font-weight: 700; font-size: 20px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.pl.mine { border-color: var(--cork); box-shadow: inset 0 0 0 1px var(--cork); }
+.pl[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.pair-sum { text-align: center; line-height: 1.1; }
+.sum-num { display: block; font-family: var(--font-num); font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sum-label { font-size: 11px; color: var(--ink-soft); }
+.pair-foot { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.meter { flex: 1; height: 6px; border-radius: 99px; background: var(--surface-2); position: relative; overflow: hidden; }
+.meter i { position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--accent); border-radius: 99px; }
+.seed { flex: none; font-size: 11.5px; font-weight: 700; color: var(--cork); background: var(--cork-soft); padding: 1px 10px; border-radius: 99px; }
+.spare { border: 1.5px dashed var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; }
+.spare-tag { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.empty { padding: 28px 16px; text-align: center; display: grid; gap: 14px; justify-items: center; color: var(--ink-soft); }
+
+/* my match card */
+.mc { border: 1.5px solid var(--accent); border-radius: 14px; background: var(--surface); padding: 16px; display: grid; gap: 12px; }
+.mc-wait { border-style: dashed; border-color: var(--line); color: var(--ink-soft); justify-items: start; }
+.mc-tag { font-size: 12px; font-weight: 900; letter-spacing: 0.08em; color: var(--accent); }
+.mc-faces { display: flex; align-items: center; }
+.face { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; font-weight: 900; border: 3px solid var(--surface); }
+.face.me { background: var(--accent); color: var(--accent-ink); }
+.face.partner { background: var(--cork-soft); color: var(--ink); margin-left: -14px; }
+.face.unknown { background: var(--surface-2); color: var(--ink-soft); margin-left: -14px; }
+.mc-name { font-size: 26px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
+.mc-sub { font-size: 13.5px; color: var(--ink-soft); }
+.segs { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+.segs i { height: 8px; border-radius: 2px; background: var(--surface-2); }
+.segs i.on { background: var(--accent); }
+.mc-facts { display: grid; gap: 6px; font-size: 14px; }
+.mc-facts div { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 6px; }
+.mc-facts span:first-child { color: var(--ink-soft); flex: none; }
+.mc-facts span:last-child { text-align: right; overflow-wrap: anywhere; }
+.mc-sealed { width: 100%; border: 1.5px solid var(--accent); border-radius: 14px; background: var(--accent-soft); color: var(--ink); font: inherit; padding: 20px 16px; cursor: pointer; display: grid; gap: 10px; justify-items: center; }
+.mc-sealed strong { font-size: 18px; font-weight: 900; }
+.mc.pop { animation: pop 0.5s ease-out; }
+@keyframes pop { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .mc.pop { animation: none; } }
+
+/* draw */
+.match { display: grid; gap: 6px; padding: 10px 12px 12px; border-top: 1px solid var(--line); }
+.match:first-child { border-top: 0; }
+.m-head { font-family: var(--font-num); font-weight: 700; font-size: 14px; letter-spacing: 0.06em; color: var(--ink-soft); }
+.slot { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 48px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.slot.mine { border-color: var(--cork); box-shadow: inset 0 0 0 1px var(--cork); }
+.slot-no { font-family: var(--font-num); font-weight: 700; font-size: 18px; color: var(--ink-soft); text-align: center; }
+.slot-main { min-width: 0; display: grid; gap: 2px; }
+.slot-names { font-weight: 500; overflow-wrap: anywhere; line-height: 1.4; }
+.slot-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-soft); }
+.slot-sum { font-family: var(--font-num); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; }
+.slot.bye { border-style: dashed; color: var(--ink-soft); }
+.export { display: grid; gap: 10px; }
+#exportText { width: 100%; min-height: 150px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; line-height: 1.6; padding: 10px 12px; resize: vertical; }
+
+/* nav + toast */
+.nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line);
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px));
+}
+.nav-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); height: 62px; }
+.nav button { background: none; border: 0; color: var(--ink-soft); font: inherit; font-size: 11.5px; font-weight: 700; display: grid; justify-items: center; align-content: center; gap: 2px; cursor: pointer; }
+.nav .ic { width: 56px; height: 28px; border-radius: 14px; display: grid; place-items: center; }
+.nav button[aria-current="page"] { color: var(--ink); }
+.nav button[aria-current="page"] .ic { background: var(--accent-soft); color: var(--accent); }
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 12px); z-index: 30;
+  max-width: calc(100% - 32px); background: var(--ink); color: var(--bg); padding: 4px 14px; border-radius: 10px;
+  display: flex; align-items: center; gap: 14px; font-size: 14px; min-height: 44px;
+}
+.toast button { background: none; border: 0; color: var(--bg); font: inherit; font-weight: 700; text-decoration: underline; min-height: 44px; cursor: pointer; white-space: nowrap; }
+
+
+[hidden] { display: none !important; }
+.who { display: grid; gap: 10px; }
+.who form { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+.sug { display: flex; flex-wrap: wrap; gap: 8px; }
+.pn-big { font-size: 20px; font-weight: 900; color: var(--cork); line-height: 1.35; overflow-wrap: anywhere; }
+.pn-tag { font-size: 11.5px; font-weight: 700; color: var(--ink-soft); }
+.pairname { font-weight: 700; color: var(--cork); font-size: 13.5px; }
+.adm { display: grid; gap: 12px; }
+.adm .pass { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+.demo { background: var(--cork-soft); padding: 8px 12px; border-radius: 8px; font-size: 13px; }
+.err { background: var(--cork-soft); color: var(--danger); padding: 8px 12px; border-radius: 8px; font-size: 13.5px; font-weight: 700; }
+.ok { color: var(--accent); font-weight: 700; font-size: 14px; }
+.link { background: none; border: 0; color: var(--ink-soft); font: inherit; font-size: 13px; text-decoration: underline; min-height: 44px; cursor: pointer; }
+</style></head><body>
+<div class="app">
+  <header class="top">
+    <svg width="32" height="42" viewBox="0 0 30 40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="1" y="1" width="28" height="38"/><path d="M4.5 1v38M25.5 1v38M1 20h28"/><path d="M4.5 14h21M4.5 26h21M15 1v13M15 26v13"/></svg>
+    <div><h1>ダブルス ペア発表</h1><p id="sub">名前と実力を登録 → ペアを発表</p></div>
+  </header>
+  <div class="demo" id="demo" hidden>デモ表示です(Google側につながっていません)。この端末の中だけで動きます。</div>
+  <div class="err" id="err" hidden></div>
+  <main>
+    <section id="view-reg" class="view" aria-labelledby="h-reg">
+      <div class="sec-head"><h2 id="h-reg">実力を登録</h2><span class="chip" id="count">0人</span></div>
+      <p class="lead">名前と実力を入れて登録します。あとから同じ名前で入れ直すと、上書きされます。実力は、一緒にラリーしたときの感覚で選んでください。</p>
+      <section class="panel me-panel">
+        <input class="name" id="regName" type="text" placeholder="あなたの名前" maxlength="20" autocomplete="off" enterkeyhint="done" aria-label="あなたの名前">
+        <div class="row-lv">
+          <input class="lv" id="regLv" type="range" min="1" max="10" step="1" value="5" style="--p:44.4%" aria-label="あなたの実力">
+          <div class="lv-read"><span class="lv-num" id="regNum">5</span><span class="lv-label" id="regLabel">サークル中級</span></div>
+        </div>
+        <p class="note">名前と実力は、参加者全員に表示されます。</p>
+        <button class="btn btn-primary btn-lg" type="button" id="regBtn">登録する</button>
+        <p class="ok" id="regOk" hidden></p>
+      </section>
+    </section>
+
+    <section id="view-me" class="view" aria-labelledby="h-me" hidden>
+      <div class="sec-head"><h2 id="h-me">自分のペアを見る</h2></div>
+      <div class="panel me-panel who">
+        <form id="whoForm" autocomplete="off">
+          <input class="name" id="whoName" type="text" placeholder="登録した名前" maxlength="30" enterkeyhint="search" aria-label="登録した名前">
+          <button class="btn btn-primary" type="submit">探す</button>
+        </form>
+        <div class="sug" id="sug"></div>
+        <p class="note" id="whoMsg" hidden></p>
+      </div>
+      <div id="myBody"></div>
+    </section>
+
+    <section id="view-all" class="view" aria-labelledby="h-all" hidden>
+      <div class="sec-head"><h2 id="h-all">みんなの登録</h2><button class="btn btn-sm" type="button" id="refresh">更新</button></div>
+      <div class="panel" id="overview"></div>
+      <button class="link" type="button" id="admOpen">主催者メニュー</button>
+      <section class="panel me-panel adm" id="adm" hidden>
+        <div class="pass" id="passRow"><input class="name" id="passIn" type="password" placeholder="主催者パスワード" autocomplete="off" aria-label="主催者パスワード"><button class="btn btn-primary" type="button" id="passBtn">開く</button></div>
+        <div class="adm" id="admBody" hidden>
+          <div class="seg" role="radiogroup" aria-label="ペアの組み方">
+            <label><input type="radio" name="mode" value="balance" checked><span>バランス</span></label>
+            <label><input type="radio" name="mode" value="near"><span>近い実力</span></label>
+            <label><input type="radio" name="mode" value="random"><span>ランダム</span></label>
+          </div>
+          <p class="note" id="modeHint"></p>
+          <button class="btn btn-primary btn-lg" type="button" id="makeBtn">ペアとトーナメントを作る</button>
+          <button class="btn" type="button" id="pubBtn" hidden></button>
+          <button class="btn btn-sm" type="button" id="clearRes" hidden>結果を消す</button>
+          <div class="sec-head sub"><h2>主催者用の確認</h2></div>
+          <div class="panel" id="admPairs"></div>
+          <div class="sec-head sub"><h2>登録の削除</h2></div>
+          <div class="panel" id="admList"></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="view-draw" class="view" aria-labelledby="h-draw" hidden>
+      <div class="sec-head"><h2 id="h-draw">トーナメント</h2></div>
+      <p class="lead" id="drawIntro"></p>
+      <div id="drawBody" style="display:grid;gap:12px"></div>
+    </section>
+  </main>
+</div>
+
+<nav class="nav" aria-label="画面の切り替え">
+  <div class="nav-in" style="grid-template-columns:repeat(4,1fr)">
+    <button type="button" data-tab="reg" aria-current="page"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4l11-11-4-4L4 16z"/></svg></span><span>登録</span></button>
+    <button type="button" data-tab="me"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="9" r="3"/><circle cx="17" cy="9" r="3"/><path d="M10 9h4"/><path d="M3 19c0-2.5 1.8-4 4-4M21 19c0-2.5-1.8-4-4-4"/></svg></span><span>自分のペア</span></button>
+    <button type="button" data-tab="all"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14.5c2.4 0 4 1.7 4 4.5"/></svg></span><span>みんな</span></button>
+    <button type="button" data-tab="draw"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h5v5h5M3 15h5v-5M13 10h8"/><path d="M3 19h5"/></svg></span><span>トーナメント</span></button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  'use strict';
+  const LV = ['', 'はじめて', '初心者', 'たまに打つ', 'ラリーが続く', 'サークル中級', 'サークル上級', '経験者', '部活経験者', '大会上位', '全国レベル'];
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s).normalize('NFKC').replace(/\s+/g, '').toLowerCase().replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 96));
+  const ls = function (k, v) {
+    try {
+      if (arguments.length > 1) localStorage.setItem(k, JSON.stringify(v));
+      else return JSON.parse(localStorage.getItem(k) || 'null');
+    } catch (e) { return null; }
+  };
+
+  /* ---- backend (Apps Script) / demo mock ---- */
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyiQxygi2C5XULZUzGTnhRqRJFgcbODDHaJwwHk4Re8v7d3Upn-CesSxyiPIZMi2QU/exec'; // ← 外部に置くときだけ、Apps Script の「ウェブアプリのURL」(…/exec)をここに貼る
+  const GAS = !!(window.google && google.script && google.script.run);
+  const REMOTE = !GAS && !!API_URL;
+  let mem = ls('pm-mock') || { players: ['田中:4', '佐藤:6', '鈴木:3', '高橋:8', '伊藤:5', '渡辺:2'].map((x, i) => ({ id: i + 1, name: x.split(':')[0], lv: +x.split(':')[1] })), result: null };
+  const saveMock = () => ls('pm-mock', mem);
+  const mock = {
+    getState: () => ({ players: mem.players, result: mem.result }),
+    register: (n, lv) => { n = String(n).trim(); const e = mem.players.find((p) => norm(p.name) === norm(n)); if (e) { e.name = n; e.lv = lv; } else mem.players.push({ id: Math.max(0, ...mem.players.map((p) => p.id)) + 1, name: n, lv }); saveMock(); return mock.getState(); },
+    adminCheck: (pw) => { if (pw !== 'demo') throw new Error('パスワードが違います(デモは demo)'); return true; },
+    adminDelete: (pw, id) => { mock.adminCheck(pw); mem.players = mem.players.filter((p) => p.id !== id); saveMock(); return mock.getState(); },
+    saveResult: (pw, r) => { mock.adminCheck(pw); mem.result = r; saveMock(); return mock.getState(); }
+  };
+  function call(fn) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    return new Promise((res, rej) => {
+      if (REMOTE) {
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
+          .then((r) => r.json()).then((j) => (j.ok ? res(j.data) : rej(new Error(j.error))))
+          .catch(() => rej(new Error('サーバーにつながりません。通信を確認してください。')));
+      } else if (GAS) { const r = google.script.run.withSuccessHandler(res).withFailureHandler((e) => rej(new Error(e && e.message ? e.message.replace(/^Error:\s*/, '') : String(e)))); r[fn].apply(r, args); }
+      else { try { res(mock[fn].apply(null, args)); } catch (e) { rej(e); } }
+    });
+  }
+
+  /* ---- state ---- */
+  let S = { players: [], result: null };
+  let meId = ls('pm-me');
+  let admPass = null;
+  const byId = () => { const m = {}; S.players.forEach((p) => (m[p.id] = p)); return m; };
+  function showErr(e) { const x = $('#err'); x.hidden = !e; x.textContent = e ? (e.message || String(e)) : ''; }
+  function setState(st) { S = st; showErr(null); renderAll(); }
+  function load() { return call('getState').then(setState).catch(showErr); }
+
+  /* ---- tabs ---- */
+  const TABS = ['reg', 'me', 'all', 'draw'];
+  function tab(t) {
+    TABS.forEach((k) => ($('#view-' + k).hidden = k !== t));
+    document.querySelectorAll('.nav button').forEach((b) => (b.getAttribute('data-tab') === t ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')));
+    window.scrollTo(0, 0);
+    if (t !== 'reg') load();
+  }
+  document.querySelectorAll('.nav button').forEach((b) => b.addEventListener('click', () => tab(b.getAttribute('data-tab'))));
+  $('#demo').hidden = GAS || REMOTE;
+
+  /* ---- register ---- */
+  const lvEl = $('#regLv');
+  function lvUi() { const v = +lvEl.value; $('#regNum').textContent = v; $('#regLabel').textContent = LV[v]; lvEl.style.setProperty('--p', ((v - 1) / 9 * 100).toFixed(1) + '%'); }
+  lvEl.addEventListener('input', lvUi);
+  const saved = ls('pm-reg'); if (saved) { $('#regName').value = saved.name; lvEl.value = saved.lv; }
+  lvUi();
+  $('#regBtn').addEventListener('click', () => {
+    const name = $('#regName').value.trim(); if (!name) { showErr(new Error('名前を入れてください')); $('#regName').focus(); return; }
+    const lv = +lvEl.value, b = $('#regBtn'); b.disabled = true; b.textContent = '送信中…';
+    call('register', name, lv).then((st) => {
+      ls('pm-reg', { name, lv }); setState(st);
+      const me = st.players.find((p) => norm(p.name) === norm(name)); if (me) { meId = me.id; ls('pm-me', meId); }
+      const o = $('#regOk'); o.hidden = false; o.textContent = '登録しました(' + name + ' ／ 実力 ' + lv + ')。ペアの発表を待ってください。';
+    }).catch(showErr).then(() => { b.disabled = false; b.textContent = '登録する'; });
+  });
+
+  /* ---- my pair ---- */
+  const msg = (t) => { const m = $('#whoMsg'); m.hidden = !t; m.textContent = t || ''; };
+  function pick(id) { meId = id; ls('pm-me', id); $('#sug').innerHTML = ''; msg(''); renderMine(false); }
+  $('#whoForm').addEventListener('submit', (e) => {
+    e.preventDefault(); const n = norm($('#whoName').value); $('#sug').innerHTML = ''; msg('');
+    if (!n) return;
+    const exact = S.players.filter((p) => norm(p.name) === n);
+    if (exact.length === 1) return pick(exact[0].id);
+    const cand = (exact.length ? exact : S.players.filter((p) => norm(p.name).includes(n) || n.includes(norm(p.name)))).slice(0, 6);
+    if (cand.length) {
+      msg('もしかして、この中にいますか?');
+      $('#sug').innerHTML = cand.map((p) => '<button class="btn btn-sm" type="button" data-id="' + p.id + '">' + esc(p.name) + '</button>').join('');
+      $('#sug').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => pick(+b.dataset.id)));
+    } else msg('その名前は登録に見つかりません。「登録」画面で使った名前と同じか、確認してください。');
+  });
+  const R = () => S.result;
+  const pairOf = (id) => R() && R().pairs.find((p) => p.ids.indexOf(id) >= 0);
+  const pairById = (id) => R().pairs.find((p) => p.id === id);
+  const members = (pr, m) => pr.ids.map((i) => (m[i] ? m[i].name : '?')).join(' ・ ');
+  const segs = (n) => '<div class="segs" aria-hidden="true">' + Array.from({ length: 10 }, (_, i) => '<i class="' + (i < n ? 'on' : '') + '"></i>').join('') + '</div>';
+  const changeBtn = () => '<p style="margin-top:12px"><button class="btn btn-sm" type="button" id="chg">別の名前で探す</button></p>';
+  function bindChange() { const b = $('#chg'); if (b) b.addEventListener('click', () => { meId = null; ls('pm-me', null); $('#whoName').value = ''; renderMine(false); $('#whoName').focus(); }); }
+  function myMatch(pr, m) {
+    const mi = R().draw.matches.findIndex((x) => x.slots.some((s) => s && s.pair === pr.id)); if (mi < 0) return '';
+    const opp = R().draw.matches[mi].slots.find((s) => !s || s.pair !== pr.id);
+    const o = !opp || opp.bye ? '1回戦はシード(不戦勝)。2回戦から登場!' : '1回戦の相手: <b>' + esc(pairById(opp.pair).name) + '</b>' + (R().published ? '(' + esc(members(pairById(opp.pair), m)) + ')' : '');
+    return '<div><span>第' + (mi + 1) + '試合</span><span>' + o + '</span></div>';
+  }
+  function renderMine(animate) {
+    const el = $('#myBody'); const m = byId(); const me = m[meId];
+    if (meId == null || !me) { el.innerHTML = ''; return; }
+    $('#whoName').value = me.name;
+    if (!R()) { el.innerHTML = '<div class="mc mc-wait"><span class="mc-tag">' + esc(me.name) + ' さん</span><p>まだペアは発表されていません。決まったらここに出ます。</p></div>' + changeBtn(); bindChange(); return; }
+    const pr = pairOf(meId);
+    if (!pr) { el.innerHTML = '<div class="mc mc-wait"><span class="mc-tag">' + esc(me.name) + ' さん</span><p>今回のペアには入っていません(補欠、または結果作成後の登録です)。主催者に聞いてください。</p></div>' + changeBtn(); bindChange(); return; }
+    const partner = m[pr.ids.find((i) => i !== meId)];
+    const key = 'pm-rev-' + R().createdAt;
+    if (!ls(key) && !R().published) {
+      el.innerHTML = '<button class="mc-sealed" id="seal" type="button"><div class="mc-faces"><div class="face me">' + esc(me.name.slice(0, 1)) + '</div><div class="face unknown">?</div></div><strong>' + esc(me.name) + ' さんのペアを開く</strong><span class="mc-sub">タップして発表</span></button>' + changeBtn();
+      $('#seal').addEventListener('click', () => { ls(key, 1); renderMine(true); }); bindChange(); return;
+    }
+    el.innerHTML = '<div class="mc ' + (animate ? 'pop' : '') + '"><span class="mc-tag">あなたのペア</span><div class="mc-faces"><div class="face me">' + esc(me.name.slice(0, 1)) + '</div><div class="face partner">' + esc(partner.name.slice(0, 1)) + '</div></div>' +
+      '<div><div class="mc-sub">相手</div><div class="mc-name">' + esc(partner.name) + ' さん</div></div><div><div class="pn-tag">ペア名</div><div class="pn-big">' + esc(pr.name) + '</div></div>' + segs(partner.lv) +
+      '<div class="mc-facts"><div><span>相手の実力</span><span>' + partner.lv + ' ' + esc(LV[partner.lv]) + '</span></div><div><span>あなたの実力</span><span>' + me.lv + ' ' + esc(LV[me.lv]) + '</span></div><div><span>ペア合計</span><span>' + (me.lv + partner.lv) + '</span></div>' + myMatch(pr, m) + '</div></div>' + changeBtn();
+    bindChange();
+  }
+
+  /* ---- overview ---- */
+  function renderOverview() {
+    const ps = S.players.slice().sort((a, b) => b.lv - a.lv || a.name.localeCompare(b.name, 'ja'));
+    $('#count').textContent = ps.length + '人';
+    if (!ps.length) { $('#overview').innerHTML = '<div class="empty">まだ誰も登録していません。</div>'; return; }
+    const avg = (ps.reduce((s, p) => s + p.lv, 0) / ps.length).toFixed(1);
+    const cnt = Array(11).fill(0); ps.forEach((p) => cnt[p.lv]++); const mx = Math.max.apply(null, cnt);
+    let hist = ''; for (let i = 1; i <= 10; i++) hist += '<div class="hist-col"><span>' + (cnt[i] || '') + '</span><div class="hb"><i class="' + (meId != null && (byId()[meId] || {}).lv === i ? 'me' : '') + '" style="height:' + (cnt[i] ? Math.max(6, cnt[i] / mx * 52) : 0) + 'px"></i></div><span>' + i + '</span></div>';
+    $('#overview').innerHTML = '<div class="ov"><div class="ov-stats"><span>登録<b>' + ps.length + '</b>人</span><span>平均<b>' + avg + '</b></span><span>最高<b>' + ps[0].lv + '</b></span><span>最低<b>' + ps[ps.length - 1].lv + '</b></span></div><div class="hist">' + hist + '</div><div class="ov-list">' +
+      ps.map((p) => '<div class="ov-row"><span class="ov-name">' + esc(p.name) + (p.id === meId ? '<em class="you">あなた</em>' : '') + '</span><span class="ov-bar"><i style="--w:' + p.lv * 10 + '%"></i></span><span class="ov-lv">' + p.lv + '</span></div>').join('') + '</div></div>';
+  }
+
+  /* ---- draw view ---- */
+  function slotHtml(s, i, m) {
+    if (!s) return '<div class="slot"><span class="slot-no">' + i + '</span><span class="slot-main"><span class="slot-names">—</span></span></div>';
+    if (s.bye) return '<div class="slot bye"><span class="slot-no">' + i + '</span><span class="slot-main"><span class="slot-names">不戦勝(BYE)</span></span></div>';
+    const pr = pairById(s.pair); const mine = meId != null && pr.ids.indexOf(meId) >= 0;
+    return '<div class="slot ' + (mine ? 'mine' : '') + '"><span class="slot-no">' + i + '</span><span class="slot-main"><span class="slot-names pairname" style="color:var(--ink)">' + esc(pr.name) + '</span><span class="slot-meta">' + (R().published ? esc(members(pr, m)) + ' ' : '') + (s.seed ? '<span class="seed">第' + s.seed + 'シード</span>' : '') + '</span></span><span class="slot-sum">' + pr.sum + '</span></div>';
+  }
+  function renderDraw() {
+    if (!R()) { $('#drawIntro').textContent = ''; $('#drawBody').innerHTML = '<div class="panel empty">トーナメントは、ペアが決まるとここに出ます。</div>'; return; }
+    const m = byId();
+    $('#drawIntro').textContent = R().pairs.length + 'ペア ／ ' + R().draw.size + '枠のシングルエリミネーション。' + (R().published ? '' : 'メンバーは「自分のペア」で本人だけに発表されます。');
+    $('#drawBody').innerHTML = '<div class="panel">' + R().draw.matches.map((x, i) => '<div class="match"><div class="m-head">第' + (i + 1) + '試合</div>' + slotHtml(x.slots[0], i * 2 + 1, m) + slotHtml(x.slots[1], i * 2 + 2, m) + '</div>').join('') + '</div>';
+  }
+
+  /* ---- generator (admin) ---- */
+  const shuf = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const NAMES = {
+    hi: ['全力ガチ勢ブラザーズ', 'スマッシュ警察', '手加減知らず商会', '筋肉は裏切らない団', 'ドロップ職人組合', '腰痛フラグ回収班', '本気出すの早すぎ連合', 'ネット前の暴君ズ', '勝ってしまってすみません', 'ガット張りたて最強説', '汗の量だけは世界一', '前衛が僕を呼んでいる', '決めに行く(外す)', '経験者ヅラ同盟'],
+    mid: ['ラリー続けたい会', 'シャトル拾い隊', '風に弱い二人', 'サーブ3回目で入る組', '運動不足を言い訳にしない会', 'ミスは相方のせい', 'とりあえず前衛', 'ハイクリア迷子', '週末だけ本気', 'ガットは緩めが好き', '足がつる前に勝つ', '準備体操だけ全国級', '背中で語るラケット', '打ち上げが本番'],
+    lo: ['のびしろ無限大', 'まず当てよう同盟', '空振りも青春', 'ラケットは持ってきた', 'シャトルと友達', '楽しけりゃOK連合', '脱・空振り計画', 'ネットが高すぎる', 'トライ&エラー兄弟', '筋肉痛は明日来る', 'フォームは自己流', '気持ちだけフルスイング', 'とりあえず生き残れ', '羽根を信じろ']
+  };
+  function generate(mode, players) {
+    let arr;
+    if (mode === 'random') arr = shuf(players);
+    else arr = players.map((p) => ({ p, k: p.lv + (mode === 'balance' ? Math.random() * 2.4 - 1.2 : Math.random() * 0.8 - 0.4) })).sort((a, b) => b.k - a.k).map((x) => x.p);
+    let spare = null; if (arr.length % 2) spare = arr.splice(mode === 'random' ? arr.length - 1 : Math.floor(arr.length / 2), 1)[0];
+    const pairs = [];
+    for (let i = 0; i < arr.length / 2; i++) {
+      const a = mode === 'balance' ? arr[i] : arr[2 * i], b = mode === 'balance' ? arr[arr.length - 1 - i] : arr[2 * i + 1];
+      pairs.push({ id: i + 1, ids: [a.id, b.id], sum: a.lv + b.lv });
+    }
+    const sums = pairs.map((p) => p.sum).sort((a, b) => a - b);
+    const q = (f) => sums[Math.min(sums.length - 1, Math.floor(sums.length * f))];
+    const t1 = q(1 / 3), t2 = q(2 / 3);
+    const pool = { hi: shuf(NAMES.hi), mid: shuf(NAMES.mid), lo: shuf(NAMES.lo) }; const all = [].concat(NAMES.hi, NAMES.mid, NAMES.lo); const used = {};
+    pairs.forEach((p) => {
+      const tier = p.sum >= t2 ? 'hi' : p.sum <= t1 ? 'lo' : 'mid';
+      const n = pool[tier].find((x) => !used[x]) || shuf(all).find((x) => !used[x]) || ('ペア' + p.id + '号');
+      used[n] = 1; p.name = n;
+    });
+    const P = pairs.length; let N = 2; while (N < P) N *= 2;
+    const bySum = pairs.slice().sort((a, b) => b.sum - a.sum);
+    const nSeed = N >= 8 ? 4 : N === 4 ? 2 : 0; const seedPos = [0, N - 1, N / 2, N / 2 - 1];
+    const slots = Array(N).fill(null); let byes = N - P;
+    const top = bySum.slice(0, nSeed); const placed = shuf(top.map((pr, k) => ({ pr, seed: k + 1 })));
+    placed.forEach((x, k) => { slots[seedPos[k]] = { pair: x.pr.id, seed: x.seed }; });
+    placed.forEach((x, k) => { if (byes > 0) { slots[seedPos[k] ^ 1] = { bye: true }; byes--; } });
+    const freeM = shuf(Array.from({ length: N / 2 }, (_, i) => i).filter((m) => !slots[2 * m] && !slots[2 * m + 1]));
+    while (byes > 0 && freeM.length) { const m = freeM.shift(); slots[2 * m + Math.floor(Math.random() * 2)] = { bye: true }; byes--; }
+    const rest = shuf(bySum.slice(nSeed));
+    for (let i = 0; i < N; i++) if (!slots[i]) slots[i] = { pair: rest.shift().id };
+    const matches = []; for (let m = 0; m < N / 2; m++) matches.push({ slots: [slots[2 * m], slots[2 * m + 1]] });
+    return { mode, published: false, createdAt: Date.now(), pairs, spare: spare ? spare.id : null, draw: { size: N, matches } };
+  }
+
+  /* ---- admin ---- */
+  const armed = new WeakMap();
+  function sure(btn, label, fn) {
+    if (armed.has(btn)) { clearTimeout(armed.get(btn).t); btn.textContent = armed.get(btn).orig; armed.delete(btn); fn(); return; }
+    const orig = btn.textContent; btn.textContent = label;
+    armed.set(btn, { orig, t: setTimeout(() => { btn.textContent = orig; armed.delete(btn); }, 4000) });
+  }
+  const HINT = { balance: '強い人と弱い人を組ませ、ペアの強さをそろえます。', near: '実力の近い人どうしで組みます。', random: '実力に関係なく、くじ引きで組みます。' };
+  document.querySelectorAll('input[name=mode]').forEach((r) => r.addEventListener('change', () => ($('#modeHint').textContent = HINT[curMode()])));
+  const curMode = () => (document.querySelector('input[name=mode]:checked') || {}).value || 'balance';
+  $('#modeHint').textContent = HINT.balance;
+  $('#admOpen').addEventListener('click', () => { $('#adm').hidden = !$('#adm').hidden; });
+  $('#passBtn').addEventListener('click', () => { const pw = $('#passIn').value; call('adminCheck', pw).then(() => { admPass = pw; showErr(null); renderAdmin(); }).catch(showErr); });
+  const admSave = (r) => call('saveResult', admPass, r).then(setState).catch(showErr);
+  $('#makeBtn').addEventListener('click', () => {
+    if (S.players.length < 4) { showErr(new Error('最低4人必要です')); return; }
+    const go = () => admSave(generate(curMode(), S.players));
+    if (R()) sure($('#makeBtn'), 'いまの結果は消えます。もう一度押すと組み直します', go); else go();
+  });
+  $('#pubBtn').addEventListener('click', () => { const r = JSON.parse(JSON.stringify(R())); r.published = !r.published; admSave(r); });
+  $('#clearRes').addEventListener('click', () => sure($('#clearRes'), 'もう一度押すと消します', () => admSave(null)));
+  function renderAdmin() {
+    $('#passRow').hidden = !!admPass; $('#admBody').hidden = !admPass; if (!admPass) return;
+    const m = byId();
+    $('#pubBtn').hidden = !R(); $('#clearRes').hidden = !R();
+    if (R()) $('#pubBtn').textContent = R().published ? 'メンバー公開をやめる(本人だけに戻す)' : '全員にペアを公開する';
+    $('#admPairs').innerHTML = R() ? R().pairs.map((p) => '<div class="mrow"><div class="l1"><b>' + esc(p.name) + '</b><span>' + p.sum + '</span></div><div class="l2">' + esc(members(p, m)) + '</div></div>').join('') + (R().spare ? '<div class="mrow"><div class="l2">補欠: ' + esc((m[R().spare] || {}).name || '') + '</div></div>' : '') : '<div class="empty">まだペアを作っていません。</div>';
+    $('#admList').innerHTML = S.players.map((p) => '<div class="ov-row" style="grid-template-columns:minmax(0,1fr) 28px 44px;padding:4px 12px"><span class="ov-name">' + esc(p.name) + '</span><span class="ov-lv">' + p.lv + '</span><button class="icon-btn" type="button" data-del="' + p.id + '" aria-label="' + esc(p.name) + 'を削除">✕</button></div>').join('');
+    $('#admList').querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => sure(b, '本当に?', () => call('adminDelete', admPass, +b.dataset.del).then(setState).catch(showErr))));
+  }
+  $('#refresh').addEventListener('click', load);
+
+  function renderAll() { renderOverview(); renderDraw(); renderMine(false); renderAdmin(); }
+  renderAll(); load();
+})();
+</script>
+</body></html>
